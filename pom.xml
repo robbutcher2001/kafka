@@ -22,6 +22,11 @@
       <artifactId>slf4j-simple</artifactId>
       <version>1.7.25</version>
     </dependency>
+    <dependency>
+      <groupId>com.twitter</groupId>
+      <artifactId>hbc-core</artifactId>
+      <version>2.2.0</version>
+    </dependency>
   </dependencies>
 
   <build>
@@ -35,7 +40,7 @@
           </descriptorRefs>
           <archive>
             <manifest>
-              <mainClass>uk.co.robertbutcher.demo.ConsumerDemoWithThread</mainClass>
+              <mainClass>uk.co.robertbutcher.twitter.TwitterProducer</mainClass>
             </manifest>
           </archive>
         </configuration>
