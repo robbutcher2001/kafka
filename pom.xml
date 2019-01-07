@@ -35,7 +35,7 @@
           </descriptorRefs>
           <archive>
             <manifest>
-              <mainClass>uk.co.robertbutcher.demo.ConsumerDemo</mainClass>
+              <mainClass>uk.co.robertbutcher.demo.ConsumerDemoWithThread</mainClass>
             </manifest>
           </archive>
         </configuration>
