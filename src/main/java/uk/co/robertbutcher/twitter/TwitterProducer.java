@@ -51,7 +51,8 @@ public class TwitterProducer {
     final BlockingQueue<String> msgQueue = new LinkedBlockingQueue<String>(1000);
 
     // Create a Twitter client
-    Client client = createTwitterClient(msgQueue);
+    final List<String> terms = Lists.newArrayList("bitcoin", "usa", "music");
+    Client client = createTwitterClient(msgQueue, terms);
     client.connect();
 
     // Create a Kafka Producer
@@ -98,11 +99,10 @@ public class TwitterProducer {
     logger.info("End of application");
   }
 
-  public Client createTwitterClient(BlockingQueue<String> msgQueue) {
+  public Client createTwitterClient(final BlockingQueue<String> msgQueue, final List<String> terms) {
     // Declare the host you want to connect to, the endpoint, and authentication (basic auth or oauth)
     Hosts hosebirdHosts = new HttpHosts(Constants.STREAM_HOST);
     StatusesFilterEndpoint hosebirdEndpoint = new StatusesFilterEndpoint();
-    List<String> terms = Lists.newArrayList("bitcoin");
     hosebirdEndpoint.trackTerms(terms);
 
     // These secrets should be read from a config file
@@ -123,6 +123,17 @@ public class TwitterProducer {
     props.setProperty(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, BOOTSTRAP_SERVER);
     props.setProperty(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class.getName());
     props.setProperty(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, StringSerializer.class.getName());
+
+    // Create a safe Producer
+    props.setProperty(ProducerConfig.ENABLE_IDEMPOTENCE_CONFIG, "true");
+    props.setProperty(ProducerConfig.ACKS_CONFIG, "all");
+    props.setProperty(ProducerConfig.RETRIES_CONFIG, Integer.toString(Integer.MAX_VALUE));
+    props.setProperty(ProducerConfig.MAX_IN_FLIGHT_REQUESTS_PER_CONNECTION, "5"); // Using Kafka 2.0 so can keep at 5, if v1.1 or less, use 1
+
+    // Create a high throughput Producer (at the expense of a bit of latency and CPU usage)
+    props.setProperty(ProducerConfig.COMPRESSION_TYPE_CONFIG, "snappy");
+    props.setProperty(ProducerConfig.LINGER_MS_CONFIG, "20");
+    props.setProperty(ProducerConfig.BATCH_SIZE_CONFIG, Integer.toString(32*1024)); //32KB batch size
 
     // Create the Producer
     return new KafkaProducer<String, String>(props);
